@@ -3,24 +3,28 @@ import os
 from datetime import datetime
 
 class ReportGenerator:
-    def __init__(self, vulnerabilities, output_format='console'):
+    def __init__(self, vulnerabilities, scanned_configs_count=0, output_format='console'):
         self.vulnerabilities = vulnerabilities
         self.output_format = output_format
+        self.scanned_configs_count = scanned_configs_count
     
-    def generate(self):
+    def generate(self, output_path=None):
         if self.output_format == 'console':
             self._generate_console_report()
         elif self.output_format == 'json':
-            self._generate_json_report()
+            self._generate_json_report(output_path)
         elif self.output_format == 'html':
-            self._generate_html_report()
+            self._generate_html_report(output_path)
     
     def _generate_console_report(self):
+        print("\n🔍 Vulnerability Scan Results:")
+        print("=" * 80)
+        print(f"Scanned configurations: {self.scanned_configs_count}")
+        
         if not self.vulnerabilities:
             print("\n✅ No vulnerabilities found!")
             return
         
-        print("\n🔍 Vulnerability Scan Results:")
         print("=" * 80)
         
         for i, vuln in enumerate(self.vulnerabilities, 1):
@@ -40,20 +44,21 @@ class ReportGenerator:
             
             print("-" * 80)
     
-    def _generate_json_report(self):
+    def _generate_json_report(self, output_path=None):
         report = {
             'scan_time': datetime.now().isoformat(),
             'vulnerabilities_count': len(self.vulnerabilities),
+            'scanned_configs_count': self.scanned_configs_count,
             'vulnerabilities': [vuln.to_dict() for vuln in self.vulnerabilities]
         }
         
-        filename = f"vulnerability_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        filename = output_path if output_path else f"vulnerability_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(filename, 'w') as f:
             json.dump(report, f, indent=2)
         
         print(f"\nJSON report saved to {filename}")
     
-    def _generate_html_report(self):
+    def _generate_html_report(self, output_path=None):
         html_content = f"""
         <!DOCTYPE html>
         <html>
@@ -74,6 +79,7 @@ class ReportGenerator:
         <body>
             <h1>Vulnerability Scan Report</h1>
             <p>Scan time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Scanned configurations: {self.scanned_configs_count}</p>
             <p>Total vulnerabilities found: {len(self.vulnerabilities)}</p>
             
             <div class="vulnerabilities">
@@ -109,7 +115,7 @@ class ReportGenerator:
         </html>
         """
         
-        filename = f"vulnerability_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+        filename = output_path if output_path else f"vulnerability_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
         with open(filename, 'w') as f:
             f.write(html_content)
         
